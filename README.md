@@ -1,5 +1,8 @@
 # PhotoGallery
-PhotoGallery app - fetches photos using the Flickr API.  from the book Android - Big Nerd Ranch to become familiar with AsyncTask, Android Networking, JSON Parsing, HandlerThreads, LRU cache, shared preferences & android services. 
+PhotoGallery app - fetches photos using the Flickr API.
+
+- From the book Android - Big Nerd Ranch to become familiar with AsyncTask, Android Networking, JSON Parsing, HandlerThreads, LRU cache, shared preferences & android services.
+- For learning purposes only.
 
 Libraries used so far: GSON, Picasso.
 
