@@ -70,8 +70,6 @@ public class PhotoGalleryFragment extends Fragment {
         };
 
 
-        PollService.setServiceAlarm(getActivity(), true);
-
         Handler responseHandler = new Handler();
         mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
         mThumbnailDownloader.setTThumbnailDownloadListener(new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
@@ -79,7 +77,7 @@ public class PhotoGalleryFragment extends Fragment {
             public void onThumbnailDownloaded(PhotoHolder photoHolder, String url, Bitmap thumbnail) {
                 Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
                 photoHolder.bindDrawable(drawable);
-                addBitmapToCache(url, thumbnail);
+                //  addBitmapToCache(url, thumbnail);
             }
         });
         mThumbnailDownloader.start();
@@ -140,6 +138,7 @@ public class PhotoGalleryFragment extends Fragment {
                 mPreCachingLayoutManager.requestLayout();
             }
         });
+
 
         return v;
     }
@@ -333,6 +332,13 @@ public class PhotoGalleryFragment extends Fragment {
                 searchView.setQuery(query, false);
             }
         });
+
+        MenuItem toggleItem = menu.findItem(R.id.menu_item_toggle_polling);
+        if (PollService.isServiceAlarmOn(getActivity())) {
+            toggleItem.setTitle(R.string.stop_polling);
+        } else {
+            toggleItem.setTitle(R.string.start_polling);
+        }
     }
 
     @Override
@@ -342,6 +348,14 @@ public class PhotoGalleryFragment extends Fragment {
                 QueryPreferences.setStoredQuery(getActivity(), null);
                 pageCount = 1;
                 updateItems();
+                return true;
+            }
+            case R.id.menu_item_toggle_polling: {
+                boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
+                PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
+
+                //Update the toolbar options menu
+                getActivity().invalidateOptionsMenu();
                 return true;
             }
             default:
