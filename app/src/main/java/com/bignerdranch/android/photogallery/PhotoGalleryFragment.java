@@ -1,10 +1,14 @@
 package com.bignerdranch.android.photogallery;
 
-import android.content.Intent;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -23,7 +27,6 @@ import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
-import com.bumptech.glide.Glide;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -42,9 +45,11 @@ public class PhotoGalleryFragment extends Fragment {
     private List<GalleryItem> mGalleryItems = new ArrayList<>();
     private ThumbnailDownloader<PhotoHolder> mThumbnailDownloader;
     private int pageCount = 1;
+    private boolean mIsPollingOn;
 
     private boolean loading = true;
     private PhotoAdapter mPhotoAdapter;
+
 
     private LruCache<String, Bitmap> mMemoryCache;
 
@@ -131,7 +136,7 @@ public class PhotoGalleryFragment extends Fragment {
                 mPhotoRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 int viewWidth = mPhotoRecyclerView.getMeasuredWidth();
                 float scale = getActivity().getResources().getDisplayMetrics().density;
-                int pixels = (int) (100 * scale + 0.5f);
+                int pixels = (int) (120 * scale + 0.5f);
 
                 int newSpanCount = (int) Math.floor(viewWidth / pixels);
                 mPreCachingLayoutManager.setSpanCount(newSpanCount);
@@ -334,11 +339,14 @@ public class PhotoGalleryFragment extends Fragment {
         });
 
         MenuItem toggleItem = menu.findItem(R.id.menu_item_toggle_polling);
-        if (PollService.isServiceAlarmOn(getActivity())) {
+
+
+        if (mIsPollingOn) {
             toggleItem.setTitle(R.string.stop_polling);
         } else {
             toggleItem.setTitle(R.string.start_polling);
         }
+
     }
 
     @Override
@@ -351,8 +359,54 @@ public class PhotoGalleryFragment extends Fragment {
                 return true;
             }
             case R.id.menu_item_toggle_polling: {
-                boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
-                PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
+
+                mIsPollingOn = !mIsPollingOn;
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+
+                    Log.i(TAG, "JOBSCHEDULER TOGGLED!!!");
+                    final int JOB_ID = 1;
+                    JobScheduler jobScheduler = (JobScheduler) getContext().getSystemService(Context.JOB_SCHEDULER_SERVICE);
+
+
+                    if (!mIsPollingOn) {
+
+
+                        jobScheduler.cancelAll();
+                        Log.i(TAG, "JOBSCHEDULER CANCELED!");
+
+                    } else {
+                        boolean hasBeenScheduled = false;
+
+                        for (JobInfo jobInfo : jobScheduler.getAllPendingJobs()) {
+                            if (jobInfo.getId() == JOB_ID) {
+                                hasBeenScheduled = true;
+                            }
+
+                        }
+
+                        if (hasBeenScheduled == false) {
+                            JobInfo jobInfo = new JobInfo.Builder(
+                                    JOB_ID, new ComponentName(getContext(), PollJobService.class))
+                                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+                                    .setPeriodic(1000 * 60)
+                                    .setPersisted(true)
+                                    .build();
+
+                            jobScheduler.schedule(jobInfo);
+
+                        }
+                    }
+
+
+                } else {
+
+                    boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
+                    PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
+
+
+                }
 
                 //Update the toolbar options menu
                 getActivity().invalidateOptionsMenu();
