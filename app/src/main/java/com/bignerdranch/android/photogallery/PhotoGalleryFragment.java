@@ -4,6 +4,7 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -215,14 +216,16 @@ public class PhotoGalleryFragment extends VisibleFragment {
         }
     }
 
-    private class PhotoHolder extends RecyclerView.ViewHolder {
+    private class PhotoHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView mImageView;
+        private GalleryItem mGalleryItem;
 
         public PhotoHolder(View itemView) {
             super(itemView);
 
             mImageView = (ImageView) itemView.findViewById(R.id.fragment_photo_gallery_image_view);
+            itemView.setOnClickListener(this);
         }
 
         public void bindDrawable(Drawable drawable) {
@@ -246,8 +249,19 @@ public class PhotoGalleryFragment extends VisibleFragment {
                     .placeholder(R.drawable.bill_up_close)
                     .error(android.R.drawable.stat_notify_error)
                     .into(mImageView);
+
+            mGalleryItem = galleryItem;
         }
 
+        @Override
+        public void onClick(View v) {
+
+            //Starts an implicit intent to open the link thru the browser
+            // Intent i = new Intent(Intent.ACTION_VIEW, mGalleryItem.getPhotoPageUri());
+
+            Intent i = PhotoPageActivity.newIntent(getActivity(), mGalleryItem.getPhotoPageUri());
+            startActivity(i);
+        }
     }
 
     private class PhotoAdapter extends RecyclerView.Adapter<PhotoHolder> {
@@ -423,7 +437,7 @@ public class PhotoGalleryFragment extends VisibleFragment {
         String query = QueryPreferences.getStoredQuery(getActivity());
         Log.d(TAG, "Preference Query: " + query);
         new FetchItemTask(query).execute();
-
     }
+
 
 }

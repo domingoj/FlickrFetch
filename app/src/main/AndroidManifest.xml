@@ -28,6 +28,10 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".PhotoPageActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"/>
+
         <service android:name=".PollService"/>
         <service
             android:name=".PollJobService"
@@ -47,7 +51,7 @@
             <intent-filter
                 android:priority="-999">
                 <action android:name="com.bignerdranch.android.photogallery.SHOW_NOTIFICATION"/>
-                </intent-filter>
+            </intent-filter>
         </receiver>
     </application>
 
