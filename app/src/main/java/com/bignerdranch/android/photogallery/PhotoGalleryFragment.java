@@ -378,14 +378,11 @@ public class PhotoGalleryFragment extends VisibleFragment {
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
-
                     Log.i(TAG, "JOBSCHEDULER TOGGLED!!!");
                     final int JOB_ID = 1;
                     JobScheduler jobScheduler = (JobScheduler) getContext().getSystemService(Context.JOB_SCHEDULER_SERVICE);
 
-
                     if (!mIsPollingOn) {
-
 
                         jobScheduler.cancelAll();
                         Log.i(TAG, "JOBSCHEDULER CANCELED!");
@@ -397,7 +394,6 @@ public class PhotoGalleryFragment extends VisibleFragment {
                             if (jobInfo.getId() == JOB_ID) {
                                 hasBeenScheduled = true;
                             }
-
                         }
 
                         if (hasBeenScheduled == false) {
@@ -412,7 +408,6 @@ public class PhotoGalleryFragment extends VisibleFragment {
 
                         }
                     }
-
 
                 } else {
 
